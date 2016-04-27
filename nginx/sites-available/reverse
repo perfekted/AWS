@@ -1,0 +1,58 @@
+server {
+    listen 80;
+    server_name bansheeaws.ddns.net;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name bansheeaws.ddns.net;
+    ssl_certificate /etc/letsencrypt/live/bansheeaws.ddns.net/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/bansheeaws.ddns.net/privkey.pem;
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers AES256+EECDH:AES256+EDH:!aNULL;
+
+location /couchpotato {
+   				proxy_pass http://127.0.0.1:5050;
+   				proxy_set_header Host $host;
+    				proxy_set_header X-Real-IP $remote_addr;
+    				proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+location /sonarr {
+    				proxy_pass http://127.0.0.1:8989;
+    				proxy_set_header Host $host;
+    				proxy_set_header X-Real-IP $remote_addr;
+    				proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+location /nzbget {
+   				proxy_pass http://127.0.0.1:6789;
+    				proxy_set_header Host $host;
+    				proxy_set_header X-Real-IP $remote_addr;
+    				proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+location /transmission {
+				proxy_pass http://127.0.0.1:9091;
+				proxy_set_header Host $host;
+				proxy_set_header X-Real-IP $remote_addr;
+				proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+location /ajenti {
+				rewrite (/ajenti)$ / break;
+				rewrite /ajenti/(.*) /$1 break;
+				proxy_pass http://127.0.0.1:8000;
+				proxy_redirect /        /ajenti/;
+         			proxy_set_header        Host             $host;
+        			proxy_set_header        X-Forwarded-For  $proxy_add_x_forwarded_for;
+        			proxy_http_version      1.1;
+        			proxy_set_header        Upgrade          $http_upgrade;
+        			proxy_set_header        Connection       $http_connection;
+        			proxy_set_header        Origin           http://$host;
+    }
+location /znc {
+				proxy_pass          https://127.0.0.1:5000;
+				#proxy_set_header    Host              $host;
+        			#proxy_set_header    X-Real-IP         $remote_addr;
+        			proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
+    }
+}
